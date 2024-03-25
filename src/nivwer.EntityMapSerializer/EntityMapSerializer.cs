@@ -1,44 +1,26 @@
-﻿using System.Reflection;
+﻿using nivwer.EntityMapSerializer.Interfaces;
 
 namespace nivwer.EntityMapSerializer;
 
-public class EntityMapSerializer<T>
+public class EntityMapSerializer : IEntityMapSerializer
 {
-    public Dictionary<string, object?> SerializeToMap(T entity)
-    {   
-        Dictionary<string, object?> map = new Dictionary<string, object?>();
+    private readonly IPropertyMapper PropertyMapper;
 
-        PropertyInfo[] properties = typeof(T).GetProperties();
+    public EntityMapSerializer()
+    {
+        PropertyMapper = new PropertyMapper();
+    }
 
-        foreach (PropertyInfo property in properties)
-        {
-            string propertyName = property.Name;
-            object? propertyValue = property.GetValue(entity);
+    public T DeserializeFromMap<T>(Dictionary<string, object?> map) 
+    where T : new()
+    {
+        T entity = PropertyMapper.MapDictionaryToEntity<T>(map);
+        return entity;
+    }
 
-            map.Add(propertyName, propertyValue);
-        }
-
+    public Dictionary<string, object?> SerializeToMap<T>(T entity)
+    {
+        var map = PropertyMapper.MapPropertiesToDictionary(entity);
         return map;
     }
 }
-
-
-/*
-class Program
-{
-    static void Main(string[] args)
-    {
-        EntitySerializer<Persona> serializer = new EntitySerializer<Persona>();
-        Persona persona = new Persona { Nombre = "Juan", Edad = 30 };
-
-        // Serializar objeto Persona a un mapa (diccionario)
-        Dictionary<string, object> mapa = serializer.SerializeToMap(persona);
-
-        // Imprimir el mapa serializado
-        foreach (var kvp in mapa)
-        {
-            Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-        }
-    }
-} 
-*/
