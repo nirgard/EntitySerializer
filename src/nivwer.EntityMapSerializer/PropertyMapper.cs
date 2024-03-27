@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using nivwer.EntityMapSerializer.Helpers;
 using nivwer.EntityMapSerializer.Interfaces;
@@ -6,23 +7,16 @@ namespace nivwer.EntityMapSerializer;
 
 public class PropertyMapper : IPropertyMapper
 {
-    public T MapDictionaryToEntity<T>(Dictionary<string, object?> map)
-    where T : new()
+    public object MapDictionaryToEntity(Type entityType, Dictionary<string, object?> map)
     {
-        var Entity = MapDictionaryToEntity(typeof(T), map);
-
-        if (Entity == null)
-        {   
-            string message = "Failed to deserialize the entity.";
+        object? entity = Activator.CreateInstance(entityType);
+      
+        if (entity == null)
+        {
+            string message = $"Failed to create an instance of the {entityType.Name} entity.";
             throw new InvalidOperationException(message);
         }
 
-        return (T)Entity ?? new T();
-    }
-
-    private object? MapDictionaryToEntity(Type entityType, Dictionary<string, object?> map)
-    {
-        object? entity = Activator.CreateInstance(entityType);
         PropertyInfo[] properties = entityType.GetProperties();
 
         foreach (PropertyInfo property in properties)
@@ -45,7 +39,7 @@ public class PropertyMapper : IPropertyMapper
         }
         else if (TypeHelper.IsCollection(property.PropertyType))
         {
-            // SetValueIfCollection(entity, property, value);
+            SetValueIfCollection(entity, property, value);
         }
         else
         {
@@ -57,6 +51,42 @@ public class PropertyMapper : IPropertyMapper
     {
         property.SetValue(entity, value);
     }
+
+    private void SetValueIfCollection<T>(T entity, PropertyInfo property, object? value)
+    {
+        if (value is IEnumerable collectionValues)
+        {
+            Type elementType = property.PropertyType.GetGenericArguments()[0];
+            Type listType = typeof(List<>).MakeGenericType(elementType);
+
+            object? collectionObject = Activator.CreateInstance(listType);
+
+            if (collectionObject == null)
+            {
+                string message = "Failed to deserialize the entity.";
+                throw new InvalidOperationException(message);
+            }
+
+            IList collection = (IList)collectionObject;
+
+            foreach (var item in collectionValues)
+            {
+                Dictionary<string, object?> itemDictionary = (Dictionary<string, object?>)item;
+                object? elementEntity = MapDictionaryToEntity(elementType, itemDictionary);
+
+                collection.Add(elementEntity);
+            }
+
+            property.SetValue(entity, collection);
+        }
+    }
+
+    // private void SetValueForNestedObject<T>(T entity, PropertyInfo property, object? value) 
+    // where T : new()
+    // {
+    //     object? nestedObject = MapDictionaryToEntity(property.PropertyType, (Dictionary<string, object?>)value);
+    //     property.SetValue(entity, nestedObject);
+    // }
 
     public Dictionary<string, object?> MapPropertiesToDictionary<T>(T entity)
     {
