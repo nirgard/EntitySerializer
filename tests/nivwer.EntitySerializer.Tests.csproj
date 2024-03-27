@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\nivwer.EntityMapSerializer.csproj" />
+    <ProjectReference Include="..\src\nivwer.EntitySerializer.csproj" />
   </ItemGroup>
-  
+
 </Project>

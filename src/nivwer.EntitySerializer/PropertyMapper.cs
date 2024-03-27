@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Reflection;
-using nivwer.EntityMapSerializer.Helpers;
-using nivwer.EntityMapSerializer.Interfaces;
+using nivwer.EntitySerializer.Helpers;
+using nivwer.EntitySerializer.Interfaces;
 
-namespace nivwer.EntityMapSerializer;
+namespace nivwer.EntitySerializer;
 
 public class PropertyMapper : IPropertyMapper
 {

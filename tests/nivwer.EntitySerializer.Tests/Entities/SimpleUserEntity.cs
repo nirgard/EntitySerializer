@@ -1,4 +1,4 @@
-namespace nivwer.EntityMapSerializer.Tests.Entities;
+namespace nivwer.EntitySerializer.Tests.Entities;
 
 public class SimpleUserEntity
 {

@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace nivwer.EntityMapSerializer.Helpers;
+namespace nivwer.EntitySerializer.Helpers;
 
 public static class TypeHelper
 {
