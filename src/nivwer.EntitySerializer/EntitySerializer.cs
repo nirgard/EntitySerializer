@@ -4,23 +4,32 @@ namespace nivwer.EntitySerializer;
 
 public class EntitySerializer : IEntitySerializer
 {
-    private readonly IPropertyMapper PropertyMapper;
+    private IPropertyMapper PropertyMapper;
 
     public EntitySerializer()
     {
         PropertyMapper = new PropertyMapper();
     }
 
-    public T DeserializeFromMap<T>(Dictionary<string, object?> map) 
-    where T : new()
+    public EntitySerializer(IPropertyMapper propertyMapper)
     {
-        object Entity = PropertyMapper.MapDictionaryToEntity(typeof(T), map);
-        return (T)Entity;
+        PropertyMapper = propertyMapper;
     }
 
-    public Dictionary<string, object?> SerializeToMap<T>(T entity)
+    public T Deserialize<T>(Dictionary<string, object?> map)
+    where T : new()
     {
-        var map = PropertyMapper.MapPropertiesToDictionary(entity);
+        T entity = new();
+        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyMapper);
+        entity = cachedEntity.DeserializeFromMap(entity, map);
+        return entity;
+    }
+
+    public Dictionary<string, object?> Serialize<T>(T entity)
+    where T : new()
+    {
+        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyMapper);
+        Dictionary<string, object?> map = cachedEntity.SerializeToMap(entity);
         return map;
     }
 }
