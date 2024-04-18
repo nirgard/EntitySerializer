@@ -17,13 +17,25 @@ public class SimpleMapperStrategy : IMapperStrategy
     {
         if (TypeHelper.IsEntity(type))
         {
-            Console.WriteLine($"Entity: {type}");
             CachedEntity<object?> cachedEntity = new CachedEntity<object?>(PropertyMapper, type);
             object nestedMap = cachedEntity.SerializeToMap(value);
 
             return nestedMap;
         }
-        Console.WriteLine($"Simple: {type}");
+
+        return value;
+    }
+
+    public object? UnmapValue(Type type, object? value)
+    {
+        if (TypeHelper.IsEntity(type) && value is Dictionary<string, object?> map)
+        {
+            CachedEntity<object?> cachedEntity = new CachedEntity<object?>(PropertyMapper, type);
+            object? nestedUnmap = cachedEntity.DeserializeFromMap(map);
+
+            return nestedUnmap;
+        }
+        
         return value;
     }
 }

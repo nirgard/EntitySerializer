@@ -1,53 +1,93 @@
 using System.Collections;
-using nivwer.EntitySerializer.Interfaces;
+using nivwer.EntitySerializer.Helpers;
 using nivwer.EntitySerializer.MapperStrategy.Interface;
 
 namespace nivwer.EntitySerializer.MapperStrategy;
 
 public class CollectionMapperStrategy : IMapperStrategy
 {
-    private readonly IPropertyMapper PropertyMapper;
+    private readonly IMapperStrategy RecursiveMapperStrategy;
 
-    public CollectionMapperStrategy(IPropertyMapper propertyMapper)
+    public CollectionMapperStrategy(IMapperStrategy recursiveMapperStrategy)
     {
-        PropertyMapper = propertyMapper;
+        RecursiveMapperStrategy = recursiveMapperStrategy;
     }
 
     public object? MapValue(Type type, object? value)
     {
         Type? elementType = GetCollectionElementType(type);
+        IEnumerable? collection = value as IEnumerable;
 
-        if (value is IEnumerable collection && elementType != null)
+        if (collection == null || elementType == null)
         {
-            Console.WriteLine($"Collection: {type}");
-            IList<object?> mappedCollection = [];
-
-            foreach (object? item in collection)
-            {
-                object? mappedItem = PropertyMapper.MapValue(elementType, item);
-                mappedCollection.Add(mappedItem);
-            }
-            
-            return mappedCollection;
-        }
-        else
-        {
-            Console.WriteLine($"Collection not IEnumerable: {type}");
             return value;
         }
+
+        IList mappedCollection = CreateListInstance(elementType, true);
+
+        foreach (object? item in collection)
+        {
+            object? mappedItem = RecursiveMapperStrategy.MapValue(elementType, item);
+            mappedCollection.Add(mappedItem);
+        }
+
+        return mappedCollection;
+    }
+
+    public object? UnmapValue(Type type, object? value)
+    {
+        Type? elementType = GetCollectionElementType(type);
+        IEnumerable? collection = value as IEnumerable;
+
+        if (collection == null || elementType == null)
+        {
+            return value;
+        }
+        
+        IList unmappedCollection = CreateListInstance(elementType);
+
+        foreach (object? item in collection)
+        {
+            object? unmappedItem = RecursiveMapperStrategy.UnmapValue(elementType, item);
+            unmappedCollection.Add(unmappedItem);
+        }
+
+        if (type.IsArray)
+        {
+            return ConvertToListToArray(elementType, unmappedCollection);
+        }
+
+        return unmappedCollection;
+    }
+
+    private IList CreateListInstance(Type elementType, bool toMap = false)
+    {
+        if (toMap && TypeHelper.IsEntity(elementType))
+            elementType = typeof(Dictionary<string, object?>);
+
+        Type listType = typeof(List<>).MakeGenericType(elementType);
+        IList collection = (IList)Activator.CreateInstance(listType)!;
+
+        return collection;
+    }
+
+    private Array ConvertToListToArray(Type elementType, IList list)
+    {
+        var array = Array.CreateInstance(elementType, list.Count);
+        list.CopyTo(array, 0);
+
+        return array;
     }
 
     private Type? GetCollectionElementType(Type type)
     {
-        if (type.IsArray)
-        {
-            return type.GetElementType();
-        }
-        else if (type.IsGenericType)
-        {
-            return type.GetGenericArguments()[0];
-        }
+        Type? elementType = null;
 
-        return null;
+        if (type.IsArray)
+            elementType = type.GetElementType();
+        else if (type.IsGenericType)
+            elementType = type.GetGenericArguments().FirstOrDefault();
+
+        return elementType;
     }
 }

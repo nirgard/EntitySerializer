@@ -1,107 +1,74 @@
-using System.Collections;
 using System.Reflection;
-using nivwer.EntitySerializer.Helpers;
 using nivwer.EntitySerializer.Interfaces;
+using nivwer.EntitySerializer.MapperStrategy;
+using nivwer.EntitySerializer.MapperStrategy.Interface;
 
 namespace nivwer.EntitySerializer;
 
 public class PropertyMapper : IPropertyMapper
 {
-    public object MapDictionaryToEntity(Type entityType, Dictionary<string, object?> map)
+    private readonly IMapperStrategy RecursiveMapperStrategy;
+
+    public PropertyMapper()
     {
-        object? entity = Activator.CreateInstance(entityType);
-      
-        if (entity == null)
-        {
-            string message = $"Failed to create an instance of the {entityType.Name} entity.";
-            throw new InvalidOperationException(message);
-        }
-
-        PropertyInfo[] properties = entityType.GetProperties();
-
-        foreach (PropertyInfo property in properties)
-        {
-            if (map.TryGetValue(property.Name, out object? value))
-            {
-                SetValueBasedOnType(entity, property, value);
-            }
-        }
-
-        return entity;
+        RecursiveMapperStrategy = new RecursiveMapperStrategy(this);
     }
 
-    private void SetValueBasedOnType<T>(T entity, PropertyInfo property, object? value)
-    where T : new()
+    public PropertyMapper(IMapperStrategy recursiveMapperStrategy)
     {
-        if (TypeHelper.IsSimpleType(property.PropertyType))
-        {
-            SetValueIfSimpleType(entity, property, value);
-        }
-        else if (TypeHelper.IsCollection(property.PropertyType))
-        {
-            SetValueIfCollection(entity, property, value);
-        }
-        else
-        {
-            // SetValueForNestedObject(entity, property, value);
-        }
+        RecursiveMapperStrategy = recursiveMapperStrategy;
     }
 
-    private void SetValueIfSimpleType<T>(T entity, PropertyInfo property, object? value)
+    public string GetPropertyName(object? entity, PropertyInfo property)
     {
-        property.SetValue(entity, value);
+        return property.Name;
     }
 
-    private void SetValueIfCollection<T>(T entity, PropertyInfo property, object? value)
+    public object? GetPropertyValue(object? entity, PropertyInfo property)
     {
-        if (value is IEnumerable collectionValues)
+        object? value = null;
+
+        try
         {
-            Type elementType = property.PropertyType.GetGenericArguments()[0];
-            Type listType = typeof(List<>).MakeGenericType(elementType);
-
-            object? collectionObject = Activator.CreateInstance(listType);
-
-            if (collectionObject == null)
-            {
-                string message = "Failed to deserialize the entity.";
-                throw new InvalidOperationException(message);
-            }
-
-            IList collection = (IList)collectionObject;
-
-            foreach (var item in collectionValues)
-            {
-                Dictionary<string, object?> itemDictionary = (Dictionary<string, object?>)item;
-                object? elementEntity = MapDictionaryToEntity(elementType, itemDictionary);
-
-                collection.Add(elementEntity);
-            }
-
-            property.SetValue(entity, collection);
+            value = property.GetValue(entity);
         }
+        catch (Exception ex) when (ex is ArgumentException || ex is MethodAccessException)
+        {
+            string message = $"Error getting property value: {ex.Message}";
+            Console.WriteLine(message);
+            Console.WriteLine(ex.StackTrace);
+        }
+
+        return value;
     }
 
-    // private void SetValueForNestedObject<T>(T entity, PropertyInfo property, object? value) 
-    // where T : new()
-    // {
-    //     object? nestedObject = MapDictionaryToEntity(property.PropertyType, (Dictionary<string, object?>)value);
-    //     property.SetValue(entity, nestedObject);
-    // }
-
-    public Dictionary<string, object?> MapPropertiesToDictionary<T>(T entity)
+    public void SetPropertyValue(object? entity, PropertyInfo property, object? value)
     {
-        Dictionary<string, object?> map = new();
-
-        PropertyInfo[] properties = typeof(T).GetProperties();
-
-        foreach (PropertyInfo property in properties)
+        try
         {
-            string propertyName = property.Name;
-            object? propertyValue = property.GetValue(entity);
-
-            map.Add(propertyName, propertyValue);
+            property.SetValue(entity, value);
         }
+        catch (Exception ex) when (ex is ArgumentException || ex is MethodAccessException)
+        {
+            string message = $"Error setting property value: {ex.Message}";
+            Console.WriteLine(message);
+            Console.WriteLine(ex.StackTrace);
+        }
+    }
+    
+    public object? MapPropertyValue(PropertyInfo property, object? value)
+    {
+        Type propertyType = property.PropertyType;
+        object? mappedProperty = RecursiveMapperStrategy.MapValue(propertyType, value);
 
-        return map;
+        return mappedProperty;
+    }
+
+    public object? UnmapPropertyValue(PropertyInfo property, object? value)
+    {
+        Type propertyType = property.PropertyType;
+        object? UnmappedProperty = RecursiveMapperStrategy.UnmapValue(propertyType, value);
+
+        return UnmappedProperty;
     }
 }
