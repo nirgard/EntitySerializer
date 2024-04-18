@@ -1,7 +1,13 @@
+using System.Reflection;
+
 namespace nivwer.EntitySerializer.Interfaces;
 
 public interface IPropertyMapper
 {
-    Dictionary<string, object?> MapPropertiesToDictionary<T>(T entity);
-    object MapDictionaryToEntity(Type entityType, Dictionary<string, object?> map);
+    string GetPropertyName(object? entity, PropertyInfo property);
+    object? GetPropertyValue(object? entity, PropertyInfo property);
+    void SetPropertyValue(object? entity, PropertyInfo property, object? value);
+    
+    object? MapPropertyValue(PropertyInfo property, object? value);
+    object? UnmapPropertyValue(PropertyInfo property, object? value);
 }

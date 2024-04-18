@@ -1,5 +1,4 @@
 using System.Reflection;
-using nivwer.EntitySerializer.Helpers;
 using nivwer.EntitySerializer.Interfaces;
 
 namespace nivwer.EntitySerializer;
@@ -7,27 +6,37 @@ namespace nivwer.EntitySerializer;
 public class CachedEntity<T>
 where T : new()
 {
+    private readonly Type EntityType;
     private readonly IPropertyMapper PropertyMapper;
     private readonly PropertyInfo[] Properties;
 
     public CachedEntity(IPropertyMapper propertyMapper)
     {
         PropertyMapper = propertyMapper;
-        Properties = typeof(T).GetProperties();
+        EntityType = typeof(T);
+        Properties = EntityType.GetProperties();
     }
 
-    public T DeserializeFromMap(T entity, Dictionary<string, object?> map)
+    public CachedEntity(IPropertyMapper propertyMapper, Type propertyType)
     {
+        PropertyMapper = propertyMapper;
+        EntityType = propertyType;
+        Properties = EntityType.GetProperties();
+    }
+
+    public T DeserializeFromMap(Dictionary<string, object?> map)
+    {
+        T entity = (T)Activator.CreateInstance(EntityType)!;
+
         foreach (PropertyInfo property in Properties)
         {
-            if (map.TryGetValue(property.Name, out object? value))
+            string propertyName = PropertyMapper.GetPropertyName(entity, property);
+
+            if (map.TryGetValue(propertyName, out object? value))
             {
-                if (TypeHelper.IsSimpleType(property.PropertyType))
-                    PropertyMapper.SetPropertyValue(entity, property, value);
-                else if (TypeHelper.IsCollection(property.PropertyType))
-                    PropertyMapper.SetCollectionPropertyValue(entity, property, value, PropertyMapper);
-                else
-                    PropertyMapper.SetNestedPropertyValue(entity, property, value, PropertyMapper);
+                object? propertyValue = PropertyMapper.UnmapPropertyValue(property, value);
+
+                PropertyMapper.SetPropertyValue(entity, property, propertyValue);
             }
         }
 
@@ -40,10 +49,12 @@ where T : new()
 
         foreach (PropertyInfo property in Properties)
         {
-            string propertyName = property.Name;
-            object? propertyValue = property.GetValue(entity);
+            string propertyName = PropertyMapper.GetPropertyName(entity, property);
+            object? propertyValue = PropertyMapper.GetPropertyValue(entity, property);
 
-            map.Add(propertyName, propertyValue);
+            object? value = PropertyMapper.MapPropertyValue(property, propertyValue);
+
+            map.Add(propertyName, value);
         }
 
         return map;
