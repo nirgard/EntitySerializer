@@ -6,8 +6,8 @@ namespace nivwer.EntitySerializer;
 public class CachedEntity<T>
 where T : new()
 {
-    private readonly Type EntityType;
     private readonly IPropertyMapper PropertyMapper;
+    private readonly Type EntityType;
     private readonly PropertyInfo[] Properties;
 
     public CachedEntity(IPropertyMapper propertyMapper)
@@ -24,7 +24,8 @@ where T : new()
         Properties = EntityType.GetProperties();
     }
 
-    public T DeserializeFromMap(Dictionary<string, object?> map)
+    public T DeserializeFromMap(
+        Dictionary<string, object?> map, bool useNestedMapping = false)
     {
         T entity = (T)Activator.CreateInstance(EntityType)!;
 
@@ -34,7 +35,12 @@ where T : new()
 
             if (map.TryGetValue(propertyName, out object? value))
             {
-                object? propertyValue = PropertyMapper.UnmapPropertyValue(property, value);
+                object? propertyValue;
+
+                if (useNestedMapping)
+                    propertyValue = PropertyMapper.UnmapPropertyValue(property, value);
+                else
+                    propertyValue = value;
 
                 PropertyMapper.SetPropertyValue(entity, property, propertyValue);
             }
@@ -43,7 +49,8 @@ where T : new()
         return entity;
     }
 
-    public Dictionary<string, object?> SerializeToMap(T entity)
+    public Dictionary<string, object?> SerializeToMap(
+        T entity, bool useNestedMapping = false)
     {
         Dictionary<string, object?> map = new Dictionary<string, object?>();
 
@@ -52,7 +59,12 @@ where T : new()
             string propertyName = PropertyMapper.GetPropertyName(entity, property);
             object? propertyValue = PropertyMapper.GetPropertyValue(entity, property);
 
-            object? value = PropertyMapper.MapPropertyValue(property, propertyValue);
+            object? value;
+
+            if (useNestedMapping)
+                value = PropertyMapper.MapPropertyValue(property, propertyValue);
+            else
+                value = propertyValue;
 
             map.Add(propertyName, value);
         }

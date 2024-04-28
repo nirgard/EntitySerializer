@@ -6,12 +6,14 @@ namespace nivwer.EntitySerializer.Tests;
 [TestClass]
 public class EntityWithEntityPropertyTests
 {
-    private IEntitySerializer? EntitySerializer;
+    private IEntitySerializer? EntitySerializerFlat;
+    private IEntitySerializer? EntitySerializerNested;
 
     [TestInitialize]
     public void SetUp()
     {
-        EntitySerializer = new EntitySerializer();
+        EntitySerializerFlat = new EntitySerializer();
+        EntitySerializerNested = new EntitySerializer(useNestedMapping: true);
     }
 
     [TestMethod]
@@ -37,7 +39,7 @@ public class EntityWithEntityPropertyTests
 
         // -- Act -------------------------------------------------------
 
-        var actual = EntitySerializer?.Deserialize<EntityWithEntityProperty>(flatMap);
+        var actual = EntitySerializerFlat?.Deserialize<EntityWithEntityProperty>(flatMap);
 
         // -- Assert ----------------------------------------------------
 
@@ -66,7 +68,7 @@ public class EntityWithEntityPropertyTests
 
         Dictionary<string, object?> nestedMap = new Dictionary<string, object?>
         {
-            { "EntityProperty", EntitySerializer?.Serialize(entityProperty) }
+            { "EntityProperty", EntitySerializerNested?.Serialize(entityProperty) }
         };
 
         EntityWithEntityProperty expected = new EntityWithEntityProperty
@@ -76,7 +78,7 @@ public class EntityWithEntityPropertyTests
 
         // -- Act -------------------------------------------------------
 
-        var actual = EntitySerializer?.Deserialize<EntityWithEntityProperty>(nestedMap);
+        var actual = EntitySerializerNested?.Deserialize<EntityWithEntityProperty>(nestedMap);
 
         // -- Assert ----------------------------------------------------
 
@@ -115,7 +117,7 @@ public class EntityWithEntityPropertyTests
 
         // -- Act -------------------------------------------------------
 
-        Dictionary<string, object?>? actual = EntitySerializer?.Serialize(entity);
+        Dictionary<string, object?>? actual = EntitySerializerFlat?.Serialize(entity);
 
         // -- Assert ----------------------------------------------------
 
@@ -151,12 +153,12 @@ public class EntityWithEntityPropertyTests
 
         Dictionary<string, object?> expected = new Dictionary<string, object?>
         {
-            { "EntityProperty", EntitySerializer?.Serialize(entityProperty) }
+            { "EntityProperty", EntitySerializerNested?.Serialize(entityProperty) }
         };
 
         // -- Act -------------------------------------------------------
 
-        Dictionary<string, object?>? actual = EntitySerializer?.Serialize(entity);
+        Dictionary<string, object?>? actual = EntitySerializerNested?.Serialize(entity);
 
         // -- Assert ----------------------------------------------------
 
