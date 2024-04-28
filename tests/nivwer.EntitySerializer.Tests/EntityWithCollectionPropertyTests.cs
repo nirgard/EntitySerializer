@@ -113,7 +113,7 @@ public class EntityWithCollectionPropertyTests
 
         Dictionary<string, object?> expected = new Dictionary<string, object?>
         {
-            { "ArrayProperty", arrayProperty.ToList() }
+            { "ArrayProperty", arrayProperty }
         };
 
         // -- Act -------------------------------------------------------
@@ -125,6 +125,6 @@ public class EntityWithCollectionPropertyTests
         Assert.IsNotNull(actual);
         Assert.IsTrue(actual.ContainsKey("ArrayProperty"));
         CollectionAssert.AreEqual(
-            expected["ArrayProperty"] as List<string>, actual["ArrayProperty"] as List<string>);
+            expected["ArrayProperty"] as string[], actual["ArrayProperty"] as string[]);
     }
 }

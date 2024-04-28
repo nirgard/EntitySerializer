@@ -31,6 +31,12 @@ public class CollectionMapperStrategy : IMapperStrategy
             mappedCollection.Add(mappedItem);
         }
 
+        // Support to arrays
+        if (type.IsArray)
+        {
+            return ConvertToListToArray(elementType, mappedCollection);
+        }
+
         return mappedCollection;
     }
 
@@ -52,6 +58,7 @@ public class CollectionMapperStrategy : IMapperStrategy
             unmappedCollection.Add(unmappedItem);
         }
 
+        // Support to arrays
         if (type.IsArray)
         {
             return ConvertToListToArray(elementType, unmappedCollection);
