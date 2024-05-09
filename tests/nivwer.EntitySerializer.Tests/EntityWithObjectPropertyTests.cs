@@ -3,6 +3,9 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with object properties.
+/// </summary>
 [TestClass]
 public class EntityWithObjectPropertyTests
 {
@@ -14,6 +17,9 @@ public class EntityWithObjectPropertyTests
         EntitySerializer = new EntitySerializer();
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with an object property.
+    /// </summary>
     [DataRow("TestString")]
     [DataRow(1)]
     [TestMethod]
@@ -43,7 +49,9 @@ public class EntityWithObjectPropertyTests
         Assert.AreEqual(expected.ObjectProperty, actual.ObjectProperty);
     }
 
-
+    /// <summary>
+    /// Tests serialization of a valid entity with an object property.
+    /// </summary>
     [DataRow("TestString")]
     [DataRow(1)]
     [TestMethod]

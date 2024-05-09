@@ -3,6 +3,9 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with collection properties.
+/// </summary>
 [TestClass]
 public class EntityWithCollectionPropertyTests
 {
@@ -14,6 +17,9 @@ public class EntityWithCollectionPropertyTests
         EntitySerializer = new EntitySerializer();
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with a list property.
+    /// </summary>
     [TestMethod]
     public void Deserialize_ValidMapWithListProperty_ReturnsEntity()
     {
@@ -42,6 +48,9 @@ public class EntityWithCollectionPropertyTests
         CollectionAssert.AreEqual(expected.ListProperty, actual.ListProperty);
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with an array property.
+    /// </summary>
     [TestMethod]
     public void Deserialize_ValidMapWithArrayProperty_ReturnsEntity()
     {
@@ -70,6 +79,9 @@ public class EntityWithCollectionPropertyTests
         CollectionAssert.AreEqual(expected.ArrayProperty, actual.ArrayProperty);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with a list property.
+    /// </summary>
     [TestMethod]
     public void Serialize_ValidEntityWithListProperty_ReturnsMap()
     {
@@ -99,6 +111,9 @@ public class EntityWithCollectionPropertyTests
             expected["ListProperty"] as List<string>, actual["ListProperty"] as List<string>);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with an array property.
+    /// </summary>
     [TestMethod]
     public void Serialize_ValidEntityWithArrayProperty_ReturnsMap()
     {

@@ -3,6 +3,9 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with dictionary properties.
+/// </summary>
 [TestClass]
 public class EntityWithDictionaryPropertyTests
 {
@@ -14,6 +17,9 @@ public class EntityWithDictionaryPropertyTests
         EntitySerializer = new EntitySerializer();
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with a dictionary property.
+    /// </summary>
     [TestMethod]
     public void Deserialize_ValidMapWithDictionaryProperty_ReturnsEntity()
     {
@@ -47,6 +53,9 @@ public class EntityWithDictionaryPropertyTests
         CollectionAssert.AreEquivalent(expected.DictionaryProperty, actual.DictionaryProperty);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with a dictionary property.
+    /// </summary>
     [TestMethod]
     public void Serialize_ValidEntityWithDictionaryProperty_ReturnsMap()
     {
@@ -78,7 +87,7 @@ public class EntityWithDictionaryPropertyTests
         Assert.IsNotNull(actual);
         Assert.IsTrue(actual.ContainsKey("DictionaryProperty"));
         CollectionAssert.AreEquivalent(
-            expected["DictionaryProperty"] as Dictionary<string, int>, 
+            expected["DictionaryProperty"] as Dictionary<string, int>,
             actual["DictionaryProperty"] as Dictionary<string, int>);
     }
 }

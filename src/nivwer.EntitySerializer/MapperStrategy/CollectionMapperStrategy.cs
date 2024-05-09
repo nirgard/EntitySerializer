@@ -4,15 +4,23 @@ using nivwer.EntitySerializer.MapperStrategy.Interface;
 
 namespace nivwer.EntitySerializer.MapperStrategy;
 
+/// <summary>
+/// Provides a strategy for mapping and unmapping collection property values during entity serialization.
+/// </summary>
 public class CollectionMapperStrategy : IMapperStrategy
 {
     private readonly IMapperStrategy RecursiveMapperStrategy;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CollectionMapperStrategy"/> class.
+    /// </summary>
+    /// <param name="recursiveMapperStrategy">The recursive mapper strategy.</param>
     public CollectionMapperStrategy(IMapperStrategy recursiveMapperStrategy)
     {
         RecursiveMapperStrategy = recursiveMapperStrategy;
     }
 
+    /// <inheritdoc />
     public object? MapValue(Type type, object? value)
     {
         Type? elementType = GetCollectionElementType(type);
@@ -31,7 +39,7 @@ public class CollectionMapperStrategy : IMapperStrategy
             mappedCollection.Add(mappedItem);
         }
 
-        // Support to arrays
+        // Support for arrays
         if (type.IsArray)
         {
             return ConvertToListToArray(elementType, mappedCollection);
@@ -40,6 +48,7 @@ public class CollectionMapperStrategy : IMapperStrategy
         return mappedCollection;
     }
 
+    /// <inheritdoc />
     public object? UnmapValue(Type type, object? value)
     {
         Type? elementType = GetCollectionElementType(type);
@@ -49,7 +58,7 @@ public class CollectionMapperStrategy : IMapperStrategy
         {
             return value;
         }
-        
+
         IList unmappedCollection = CreateListInstance(elementType);
 
         foreach (object? item in collection)
@@ -58,7 +67,7 @@ public class CollectionMapperStrategy : IMapperStrategy
             unmappedCollection.Add(unmappedItem);
         }
 
-        // Support to arrays
+        // Support for arrays
         if (type.IsArray)
         {
             return ConvertToListToArray(elementType, unmappedCollection);

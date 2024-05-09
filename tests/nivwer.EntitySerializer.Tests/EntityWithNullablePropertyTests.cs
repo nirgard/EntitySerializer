@@ -3,6 +3,9 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with nullable properties.
+/// </summary>
 [TestClass]
 public class EntityWithNullablePropertyTests
 {
@@ -14,6 +17,9 @@ public class EntityWithNullablePropertyTests
         EntitySerializer = new EntitySerializer();
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with nullable properties.
+    /// </summary>
     [DataRow("TestString")]
     [DataRow(null)]
     [TestMethod]
@@ -43,6 +49,9 @@ public class EntityWithNullablePropertyTests
         Assert.AreEqual(expected.NullableProperty, actual.NullableProperty);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with nullable properties.
+    /// </summary>
     [DataRow("TestString")]
     [DataRow(null)]
     [TestMethod]

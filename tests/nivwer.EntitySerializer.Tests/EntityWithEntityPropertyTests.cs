@@ -3,6 +3,10 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with entity properties.
+/// Alternating between flat mapping and nested mapping.
+/// </summary>
 [TestClass]
 public class EntityWithEntityPropertyTests
 {
@@ -16,10 +20,13 @@ public class EntityWithEntityPropertyTests
 
         IPropertyManager propertyManager = new PropertyManager();
         propertyManager.Mapper.UseNestedMapping = true;
-        
+
         EntitySerializerNested = new EntitySerializer(propertyManager);
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid flat map with an entity property.
+    /// </summary>
     [TestMethod]
     public void Deserialize_ValidFlatMapWithEntityProperty_ReturnsEntity()
     {
@@ -31,14 +38,14 @@ public class EntityWithEntityPropertyTests
             StringProperty = "TestString"
         };
 
-        Dictionary<string, object?> flatMap = new Dictionary<string, object?> 
+        Dictionary<string, object?> flatMap = new Dictionary<string, object?>
         {
             { "EntityProperty", entityProperty }
         };
 
         EntityWithEntityProperty expected = new EntityWithEntityProperty
-        { 
-            EntityProperty = entityProperty 
+        {
+            EntityProperty = entityProperty
         };
 
         // -- Act -------------------------------------------------------
@@ -52,12 +59,16 @@ public class EntityWithEntityPropertyTests
 
         Assert.IsNotNull(actual.EntityProperty);
         Assert.IsInstanceOfType(actual.EntityProperty, typeof(EntityWithBasicProperty));
-        
+
         Assert.AreEqual(
             expected.EntityProperty.IntegerProperty, actual.EntityProperty.IntegerProperty);
         Assert.AreEqual(
             expected.EntityProperty.StringProperty, actual.EntityProperty.StringProperty);
     }
+
+    /// <summary>
+    /// Tests deserialization of a valid nested map with an entity property.
+    /// </summary>
 
     [TestMethod]
     public void Deserialize_ValidNestedMapWithEntityProperty_ReturnsEntity()
@@ -98,6 +109,9 @@ public class EntityWithEntityPropertyTests
             expected.EntityProperty.StringProperty, actual.EntityProperty.StringProperty);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with a entity property to a flat map.
+    /// </summary>
     [TestMethod]
     public void Serialize_ValidEntityWithEntityProperty_ReturnsFlatMap()
     {
@@ -127,18 +141,21 @@ public class EntityWithEntityPropertyTests
 
         Assert.IsNotNull(actual);
         Assert.IsTrue(actual.ContainsKey("EntityProperty"));
-        
+
         Assert.IsNotNull(actual["EntityProperty"]);
         Assert.IsInstanceOfType(actual["EntityProperty"], typeof(EntityWithBasicProperty));
 
         Assert.AreEqual(
-            (expected["EntityProperty"] as EntityWithBasicProperty)?.IntegerProperty, 
+            (expected["EntityProperty"] as EntityWithBasicProperty)?.IntegerProperty,
             (actual["EntityProperty"] as EntityWithBasicProperty)?.IntegerProperty);
         Assert.AreEqual(
-            (expected["EntityProperty"] as EntityWithBasicProperty)?.StringProperty, 
+            (expected["EntityProperty"] as EntityWithBasicProperty)?.StringProperty,
             (actual["EntityProperty"] as EntityWithBasicProperty)?.StringProperty);
     }
 
+    /// <summary>
+    /// Tests serialization of a valid entity with a entity property to nested map.
+    /// </summary>
     [TestMethod]
     public void Serialize_ValidEntityWithEntityProperty_ReturnsNestedMap()
     {
@@ -173,7 +190,7 @@ public class EntityWithEntityPropertyTests
         Assert.IsInstanceOfType(actual["EntityProperty"], typeof(Dictionary<string, object?>));
 
         CollectionAssert.AreEquivalent(
-            expected["EntityProperty"] as Dictionary<string, object?>, 
+            expected["EntityProperty"] as Dictionary<string, object?>,
             actual["EntityProperty"] as Dictionary<string, object?>);
     }
 }

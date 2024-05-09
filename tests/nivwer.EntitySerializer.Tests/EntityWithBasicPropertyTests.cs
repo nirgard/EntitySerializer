@@ -3,6 +3,9 @@ using nivwer.EntitySerializer.Tests.Entities;
 
 namespace nivwer.EntitySerializer.Tests;
 
+/// <summary>
+/// Contains unit tests for deserialization and serialization of entities with basic properties.
+/// </summary>
 [TestClass]
 public class EntityWithBasicPropertyTests
 {
@@ -14,6 +17,9 @@ public class EntityWithBasicPropertyTests
         EntitySerializer = new EntitySerializer();
     }
 
+    /// <summary>
+    /// Tests deserialization of a valid map with basic properties.
+    /// </summary>
     [DataRow(1, "TestString1")]
     [DataRow(2, "TestString2")]
     [DataRow(3, "TestString3")]
@@ -47,8 +53,9 @@ public class EntityWithBasicPropertyTests
         Assert.AreEqual(expected.StringProperty, actual.StringProperty);
     }
 
-
-
+    /// <summary>
+    /// Tests serialization of a valid entity with basic properties.
+    /// </summary>
     [DataRow(1, "TestString1")]
     [DataRow(2, "TestString2")]
     [DataRow(3, "TestString3")]

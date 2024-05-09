@@ -4,15 +4,23 @@ using nivwer.EntitySerializer.MapperStrategy.Interface;
 
 namespace nivwer.EntitySerializer.MapperStrategy;
 
+/// <summary>
+/// Provides a strategy for mapping and unmapping dictionary property values during entity serialization.
+/// </summary>
 public class DictionaryMapperStrategy : IMapperStrategy
 {
     private readonly IMapperStrategy RecursiveMapperStrategy;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DictionaryMapperStrategy"/> class.
+    /// </summary>
+    /// <param name="recursiveMapperStrategy">The recursive mapper strategy.</param>    
     public DictionaryMapperStrategy(IMapperStrategy recursiveMapperStrategy)
     {
         RecursiveMapperStrategy = recursiveMapperStrategy;
     }
 
+    /// <inheritdoc />
     public object? MapValue(Type type, object? value)
     {
         Type keyType = GetDictionaryKeyType(type);
@@ -38,11 +46,12 @@ public class DictionaryMapperStrategy : IMapperStrategy
         return mappedDictionary;
     }
 
+    /// <inheritdoc />
     public object? UnmapValue(Type type, object? value)
     {
         Type keyType = GetDictionaryKeyType(type);
         Type valueType = GetDictionaryValueType(type);
-        
+
         IDictionary? dictionary = value as IDictionary;
 
         if (dictionary == null)
