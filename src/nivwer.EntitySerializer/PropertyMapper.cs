@@ -7,68 +7,24 @@ namespace nivwer.EntitySerializer;
 
 public class PropertyMapper : IPropertyMapper
 {
-    private readonly IMapperStrategy RecursiveMapperStrategy;
+    private readonly IMapperStrategy Strategy;
 
-    public PropertyMapper()
+    public PropertyMapper(IPropertyManager propertyManager, IMapperStrategy? strategy = null)
     {
-        RecursiveMapperStrategy = new RecursiveMapperStrategy(this);
+        Strategy = strategy ?? new RecursiveMapperStrategy(propertyManager);
     }
 
-    public PropertyMapper(IMapperStrategy recursiveMapperStrategy)
-    {
-        RecursiveMapperStrategy = recursiveMapperStrategy;
-    }
+    public bool UseNestedMapping { get; set; } = false;
 
-    public string GetPropertyName(object? entity, PropertyInfo property)
-    {
-        return property.Name;
-    }
-
-    public object? GetPropertyValue(object? entity, PropertyInfo property)
-    {
-        object? value = null;
-
-        try
-        {
-            value = property.GetValue(entity);
-        }
-        catch (Exception ex) when (ex is ArgumentException || ex is MethodAccessException)
-        {
-            string message = $"Error getting property value: {ex.Message}";
-            Console.WriteLine(message);
-            Console.WriteLine(ex.StackTrace);
-        }
-
-        return value;
-    }
-
-    public void SetPropertyValue(object? entity, PropertyInfo property, object? value)
-    {
-        try
-        {
-            property.SetValue(entity, value);
-        }
-        catch (Exception ex) when (ex is ArgumentException || ex is MethodAccessException)
-        {
-            string message = $"Error setting property value: {ex.Message}";
-            Console.WriteLine(message);
-            Console.WriteLine(ex.StackTrace);
-        }
-    }
-    
     public object? MapPropertyValue(PropertyInfo property, object? value)
     {
         Type propertyType = property.PropertyType;
-        object? mappedProperty = RecursiveMapperStrategy.MapValue(propertyType, value);
-
-        return mappedProperty;
+        return UseNestedMapping ? Strategy.MapValue(propertyType, value) : value;
     }
 
     public object? UnmapPropertyValue(PropertyInfo property, object? value)
     {
         Type propertyType = property.PropertyType;
-        object? UnmappedProperty = RecursiveMapperStrategy.UnmapValue(propertyType, value);
-
-        return UnmappedProperty;
+        return UseNestedMapping ? Strategy.UnmapValue(propertyType, value) : value;
     }
 }

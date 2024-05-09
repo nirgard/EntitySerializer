@@ -4,16 +4,11 @@ namespace nivwer.EntitySerializer;
 
 public class EntitySerializer : IEntitySerializer
 {
-    public SerializationOptions Options;
-    private readonly IPropertyMapper PropertyMapper;
+    private readonly IPropertyManager PropertyManager;
 
-    public EntitySerializer(
-        IPropertyMapper? propertyMapper = null, bool? useNestedMapping = null)
+    public EntitySerializer(IPropertyManager? propertyManager = null)
     {
-        Options = new SerializationOptions();
-        Options.UseNestedMapping = useNestedMapping ?? Options.UseNestedMapping;
-
-        PropertyMapper = propertyMapper ?? new PropertyMapper();
+        PropertyManager = propertyManager ?? new PropertyManager();
     }
 
     public T Deserialize<T>(Dictionary<string, object?> map)
@@ -21,8 +16,8 @@ public class EntitySerializer : IEntitySerializer
     {
         T entity;
 
-        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyMapper);
-        entity = cachedEntity.DeserializeFromMap(map, Options.UseNestedMapping);
+        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyManager);
+        entity = cachedEntity.DeserializeFromMap(map);
 
         return entity;
     }
@@ -32,8 +27,8 @@ public class EntitySerializer : IEntitySerializer
     {
         Dictionary<string, object?> map;
 
-        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyMapper);
-        map = cachedEntity.SerializeToMap(entity, Options.UseNestedMapping);
+        CachedEntity<T> cachedEntity = new CachedEntity<T>(PropertyManager);
+        map = cachedEntity.SerializeToMap(entity);
 
         return map;
     }

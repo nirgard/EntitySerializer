@@ -6,11 +6,11 @@ namespace nivwer.EntitySerializer.MapperStrategy;
 
 public class RecursiveMapperStrategy : IMapperStrategy
 {
-    private readonly IPropertyMapper PropertyMapper;
+    private readonly IPropertyManager PropertyManager;
 
-    public RecursiveMapperStrategy(IPropertyMapper propertyMapper)
+    public RecursiveMapperStrategy(IPropertyManager propertyManager)
     {
-        PropertyMapper = propertyMapper;
+        PropertyManager = propertyManager;
     }
 
     public object? MapValue(Type type, object? value)
@@ -44,7 +44,7 @@ public class RecursiveMapperStrategy : IMapperStrategy
         else if (TypeHelper.IsDictionary(type))
             strategy = new DictionaryMapperStrategy(this);
         else
-            strategy = new SimpleMapperStrategy(PropertyMapper);
+            strategy = new SimpleMapperStrategy(PropertyManager);
 
         return strategy;
     }

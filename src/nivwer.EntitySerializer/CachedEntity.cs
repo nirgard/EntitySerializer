@@ -1,4 +1,5 @@
 using System.Reflection;
+using nivwer.EntitySerializer.Attributes;
 using nivwer.EntitySerializer.Interfaces;
 
 namespace nivwer.EntitySerializer;
@@ -6,69 +7,78 @@ namespace nivwer.EntitySerializer;
 public class CachedEntity<T>
 where T : new()
 {
-    private readonly IPropertyMapper PropertyMapper;
+    private readonly IPropertyManager PropertyManager;
+
     private readonly Type EntityType;
-    private readonly PropertyInfo[] Properties;
+    private readonly List<CachedProperty> SerializableProperties;
 
-    public CachedEntity(IPropertyMapper propertyMapper)
+    public CachedEntity(IPropertyManager propertyManager)
     {
-        PropertyMapper = propertyMapper;
+        PropertyManager = propertyManager;
+
         EntityType = typeof(T);
-        Properties = EntityType.GetProperties();
+        SerializableProperties = GetSerializableProperties(EntityType);
     }
 
-    public CachedEntity(IPropertyMapper propertyMapper, Type propertyType)
+    public CachedEntity(IPropertyManager propertyManager, Type propertyType)
     {
-        PropertyMapper = propertyMapper;
+        PropertyManager = propertyManager;
+
         EntityType = propertyType;
-        Properties = EntityType.GetProperties();
+        SerializableProperties = GetSerializableProperties(EntityType);
     }
 
-    public T DeserializeFromMap(
-        Dictionary<string, object?> map, bool useNestedMapping = false)
+    private List<CachedProperty> GetSerializableProperties(Type entityType)
+    {
+        List<CachedProperty> serializableProperties = [];
+        PropertyInfo[] properties = entityType.GetProperties();
+
+        foreach (PropertyInfo property in properties)
+        {
+            if (SerializeAllProperties(properties)
+                || PropertyManager.Accessor.HasSerializablePropertyAttribute(property))
+            {
+                CachedProperty cachedProperty = new(property, PropertyManager);
+                serializableProperties.Add(cachedProperty);
+            }
+        }
+
+        return serializableProperties;
+    }
+
+    public T DeserializeFromMap(Dictionary<string, object?> map)
     {
         T entity = (T)Activator.CreateInstance(EntityType)!;
 
-        foreach (PropertyInfo property in Properties)
+        foreach (CachedProperty cachedProperty in SerializableProperties)
         {
-            string propertyName = PropertyMapper.GetPropertyName(entity, property);
+            string key = cachedProperty.GetKey();
 
-            if (map.TryGetValue(propertyName, out object? value))
-            {
-                object? propertyValue;
-
-                if (useNestedMapping)
-                    propertyValue = PropertyMapper.UnmapPropertyValue(property, value);
-                else
-                    propertyValue = value;
-
-                PropertyMapper.SetPropertyValue(entity, property, propertyValue);
-            }
+            if (map.TryGetValue(key, out object? value))
+                cachedProperty.SetValue(entity, value);
         }
 
         return entity;
     }
 
-    public Dictionary<string, object?> SerializeToMap(
-        T entity, bool useNestedMapping = false)
+    public Dictionary<string, object?> SerializeToMap(T entity)
     {
         Dictionary<string, object?> map = new Dictionary<string, object?>();
 
-        foreach (PropertyInfo property in Properties)
+        foreach (CachedProperty cachedProperty in SerializableProperties)
         {
-            string propertyName = PropertyMapper.GetPropertyName(entity, property);
-            object? propertyValue = PropertyMapper.GetPropertyValue(entity, property);
+            string key = cachedProperty.GetKey();
+            object? value = cachedProperty.GetValue(entity);
 
-            object? value;
-
-            if (useNestedMapping)
-                value = PropertyMapper.MapPropertyValue(property, propertyValue);
-            else
-                value = propertyValue;
-
-            map.Add(propertyName, value);
+            map.Add(key, value);
         }
 
         return map;
+    }
+
+    private bool SerializeAllProperties(PropertyInfo[] properties)
+    {
+        return !properties.Any(property => 
+            PropertyManager.Accessor.HasSerializablePropertyAttribute(property));
     }
 }

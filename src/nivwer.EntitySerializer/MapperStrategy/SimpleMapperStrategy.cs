@@ -6,18 +6,17 @@ namespace nivwer.EntitySerializer.MapperStrategy;
 
 public class SimpleMapperStrategy : IMapperStrategy
 {
-    private readonly IPropertyMapper PropertyMapper;
-
-    public SimpleMapperStrategy(IPropertyMapper propertyMapper)
+    private readonly IPropertyManager PropertyManager;
+    public SimpleMapperStrategy(IPropertyManager propertyManager)
     {
-        PropertyMapper = propertyMapper;
+        PropertyManager = propertyManager;
     }
 
     public object? MapValue(Type type, object? value)
     {
         if (TypeHelper.IsEntity(type))
         {
-            CachedEntity<object?> cachedEntity = new CachedEntity<object?>(PropertyMapper, type);
+            CachedEntity<object?> cachedEntity = new(PropertyManager, type);
             object nestedMap = cachedEntity.SerializeToMap(value);
 
             return nestedMap;
@@ -30,12 +29,12 @@ public class SimpleMapperStrategy : IMapperStrategy
     {
         if (TypeHelper.IsEntity(type) && value is Dictionary<string, object?> map)
         {
-            CachedEntity<object?> cachedEntity = new CachedEntity<object?>(PropertyMapper, type);
+            CachedEntity<object?> cachedEntity = new(PropertyManager, type);
             object? nestedUnmap = cachedEntity.DeserializeFromMap(map);
 
             return nestedUnmap;
         }
-        
+
         return value;
     }
 }

@@ -13,7 +13,11 @@ public class EntityWithEntityPropertyTests
     public void SetUp()
     {
         EntitySerializerFlat = new EntitySerializer();
-        EntitySerializerNested = new EntitySerializer(useNestedMapping: true);
+
+        IPropertyManager propertyManager = new PropertyManager();
+        propertyManager.Mapper.UseNestedMapping = true;
+        
+        EntitySerializerNested = new EntitySerializer(propertyManager);
     }
 
     [TestMethod]

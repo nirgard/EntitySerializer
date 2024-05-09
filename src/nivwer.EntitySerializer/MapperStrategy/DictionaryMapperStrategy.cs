@@ -25,7 +25,6 @@ public class DictionaryMapperStrategy : IMapperStrategy
             return value;
         }
 
-        Console.WriteLine($"Map Dictionary: {type}");
         IDictionary mappedDictionary = CreateDictionaryInstance(keyType, valueType, true);
 
         foreach (DictionaryEntry entry in dictionary)
@@ -51,7 +50,6 @@ public class DictionaryMapperStrategy : IMapperStrategy
             return value;
         }
 
-        Console.WriteLine($"Unmap Dictionary: {type}");
         IDictionary unmappedDictionary = CreateDictionaryInstance(keyType, valueType);
 
         foreach (DictionaryEntry entry in dictionary)
